@@ -350,6 +350,103 @@ body {
     color: var(--text-primary);
 }
 
+/* Dark theme specific select styles */
+[data-theme="dark"] .control-select {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .control-select option {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .control-select option:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .control-select option:checked {
+    background: #3b82f6;
+    color: white;
+}
+
+/* Light theme specific select styles */
+[data-theme="light"] .control-select {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .control-select option {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .control-select option:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .control-select option:checked {
+    background: #3b82f6;
+    color: white;
+}
+
+/* Control Input Styles */
+.control-input {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.control-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #3b82f6;
+    border-color: transparent;
+}
+
+.control-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Dark theme specific input styles */
+[data-theme="dark"] .control-input {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .control-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Light theme specific input styles */
+[data-theme="light"] .control-input {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .control-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Search input with icon */
+.control-input.pl-10 {
+    padding-left: 2.5rem;
+}
+
+/* Icon color for search */
+[data-theme="dark"] .text-gray-400 {
+    color: var(--text-muted);
+}
+
+[data-theme="light"] .text-gray-400 {
+    color: var(--text-muted);
+}
+
 /* Buttons */
 .btn-primary {
     background: linear-gradient(135deg, #3b82f6, #1d4ed8);
