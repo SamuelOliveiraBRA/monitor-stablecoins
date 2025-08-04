@@ -1,0 +1,19 @@
+# Ignorar ambientes virtuais
+venv/
+.env
+__pycache__/
+models/
+*.pyc
+
+# Ignorar arquivos de configuração locais
+*.env
+*.log
+
+# Ignorar arquivos e pastas ocultas
+.DS_Store
+.idea/
+.vscode/
+
+# Ignorar dependências de pacotes se estiver usando pipenv ou poetry
+Pipfile.lock
+poetry.lock

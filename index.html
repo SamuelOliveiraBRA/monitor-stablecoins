@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cripto Monitor Pro</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#111827">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cripto Monitor Pro">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'mono': ['JetBrains Mono', 'Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+        
+        // Global error handlers to prevent unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(event) {
+            console.warn('Unhandled promise rejection prevented:', event.reason);
+            event.preventDefault();
+        });
+        
+        window.addEventListener('error', function(event) {
+            console.warn('Global error caught:', event.error);
+        });
+    </script>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 bg-gray-900 z-50 flex items-center justify-center">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p class="text-lg font-medium">Carregando Cripto Monitor Pro...</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="glassmorphism fixed top-0 left-0 right-0 z-40 p-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <i data-feather="trending-up" class="w-6 h-6"></i>
+                </div>
+                <h1 class="text-xl font-bold hidden sm:block">Cripto Monitor Pro</h1>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" class="p-2 rounded-lg glassmorphism hover:bg-white/10 transition-all">
+                    <i data-feather="sun" class="w-5 h-5"></i>
+                </button>
+                
+                <!-- Settings -->
+                <button id="settings-btn" class="p-2 rounded-lg glassmorphism hover:bg-white/10 transition-all">
+                    <i data-feather="settings" class="w-5 h-5"></i>
+                </button>
+                
+                <!-- Notifications -->
+                <button id="notifications-btn" class="p-2 rounded-lg glassmorphism hover:bg-white/10 transition-all relative">
+                    <i data-feather="bell" class="w-5 h-5"></i>
+                    <span id="notifications-badge" class="absolute -top-1 -right-1 bg-red-500 text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-20 pb-8 px-4">
+        <div class="max-w-7xl mx-auto">
+            <!-- Market Overview Section -->
+            <section class="mb-8">
+                <div class="glassmorphism p-6 rounded-2xl">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold mb-2">Visão Geral do Mercado</h2>
+                            <div class="flex items-center gap-2 text-sm text-gray-400">
+                                <div id="update-indicator" class="flex items-center gap-2">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                    <span>Última atualização: <span id="last-update">--</span></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 mt-4 lg:mt-0">
+                            <select id="currency-select" class="control-select">
+                                <option value="usd">USD</option>
+                                <option value="brl">BRL</option>
+                                <option value="eur">EUR</option>
+                            </select>
+                            <button id="refresh-btn" class="btn-primary">
+                                <i data-feather="refresh-cw" class="w-4 h-4 mr-2"></i>
+                                Atualizar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Market Stats -->
+                    <div class="market-overview-grid" id="market-stats">
+                        <!-- Stats will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Arbitrage Opportunities Section -->
+            <section class="mb-8">
+                <div class="glassmorphism p-6 rounded-2xl">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-2xl font-bold">Oportunidades de Arbitragem</h2>
+                            <span id="arbitrage-badge" class="bg-green-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button id="start-arbitrage-btn" class="btn-primary">
+                                <i data-feather="trending-up" class="w-4 h-4 mr-2"></i>
+                                Iniciar Monitoramento
+                            </button>
+                            <button id="stop-arbitrage-btn" class="btn-secondary hidden">
+                                <i data-feather="square" class="w-4 h-4 mr-2"></i>
+                                Parar
+                            </button>
+                            <button id="arbitrage-settings-btn" class="btn-secondary">
+                                <i data-feather="settings" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="arbitrage-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <!-- Arbitrage opportunities will be populated by JavaScript -->
+                    </div>
+                    
+                    <div id="arbitrage-empty" class="text-center py-8 text-gray-400">
+                        <i data-feather="search" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+                        <p>Nenhuma oportunidade de arbitragem encontrada no momento.</p>
+                        <p class="text-sm mt-2">Inicie o monitoramento para buscar diferenças de preços entre exchanges.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Portfolio Section -->
+            <section class="mb-8">
+                <div class="glassmorphism p-6 rounded-2xl">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+                        <h2 class="text-2xl font-bold mb-4 sm:mb-0">Meu Portfólio</h2>
+                        <div class="flex items-center gap-3">
+                            <button id="add-coin-btn" class="btn-primary">
+                                <i data-feather="plus" class="w-4 h-4 mr-2"></i>
+                                Adicionar Moeda
+                            </button>
+                            <button id="portfolio-settings-btn" class="btn-secondary">
+                                <i data-feather="pie-chart" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="lg:col-span-2">
+                            <div id="portfolio-value" class="text-center lg:text-left">
+                                <p class="text-sm text-gray-400 mb-1">Valor Total do Portfólio</p>
+                                <p class="text-4xl font-bold portfolio-total" id="total-value">$0.00</p>
+                                <div class="flex items-center justify-center lg:justify-start gap-2 mt-2">
+                                    <span id="portfolio-change" class="text-lg font-semibold">$0.00</span>
+                                    <span id="portfolio-percentage" class="text-sm">0.00%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden lg:block">
+                            <canvas id="portfolio-chart" width="200" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filters and Search -->
+            <section class="mb-6">
+                <div class="glassmorphism p-4 rounded-xl">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1">
+                            <div class="relative">
+                                <i data-feather="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                                <input type="text" id="search-input" placeholder="Buscar criptomoedas..." 
+                                       class="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                        <div class="flex gap-2 flex-wrap">
+                            <select id="sort-select" class="control-select">
+                                <option value="market_cap">Market Cap</option>
+                                <option value="price">Preço</option>
+                                <option value="change_24h">Variação 24h</option>
+                                <option value="volume">Volume</option>
+                            </select>
+                            <select id="filter-select" class="control-select">
+                                <option value="all">Todas</option>
+                                <option value="gainers">Maiores Altas</option>
+                                <option value="losers">Maiores Baixas</option>
+                                <option value="portfolio">Portfólio</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cryptocurrency Grid -->
+            <section>
+                <div id="crypto-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Crypto cards will be populated by JavaScript -->
+                </div>
+                
+                <div id="loading-more" class="text-center mt-8 hidden">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Add Coin Modal -->
+    <div id="add-coin-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="glassmorphism p-6 rounded-2xl w-full max-w-md">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold">Adicionar ao Portfólio</h3>
+                    <button id="close-add-modal" class="p-1 hover:bg-white/10 rounded">
+                        <i data-feather="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                
+                <form id="add-coin-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Criptomoeda</label>
+                        <select id="coin-select" class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white">
+                            <option value="">Selecione uma moeda...</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Quantidade</label>
+                        <input type="number" id="coin-amount" step="0.00000001" min="0" 
+                               class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400" 
+                               placeholder="0.00">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Preço de Compra (Opcional)</label>
+                        <input type="number" id="coin-buy-price" step="0.01" min="0" 
+                               class="w-full p-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400" 
+                               placeholder="Preço atual será usado">
+                    </div>
+                    
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" id="cancel-add" class="flex-1 btn-secondary">Cancelar</button>
+                        <button type="submit" class="flex-1 btn-primary">Adicionar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coin Detail Modal -->
+    <div id="coin-detail-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="glassmorphism p-6 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div id="detail-coin-icon" class="coin-icon w-12 h-12"></div>
+                        <div>
+                            <h3 id="detail-coin-name" class="text-2xl font-bold"></h3>
+                            <p id="detail-coin-symbol" class="text-gray-400 uppercase"></p>
+                        </div>
+                    </div>
+                    <button id="close-detail-modal" class="p-1 hover:bg-white/10 rounded">
+                        <i data-feather="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <div class="mb-6">
+                            <canvas id="detail-chart" width="400" height="300"></canvas>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="stat-card">
+                                <div class="stat-value" id="detail-current-price">$0.00</div>
+                                <div class="stat-label">Preço Atual</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="detail-24h-change">0.00%</div>
+                                <div class="stat-label">Variação 24h</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="glassmorphism p-4 rounded-xl">
+                            <h4 class="font-semibold mb-3">Configurar Alerta</h4>
+                            <form id="alert-form" class="space-y-3">
+                                <div>
+                                    <label class="block text-sm mb-1">Tipo de Alerta</label>
+                                    <select id="alert-type" class="w-full p-2 bg-white/10 border border-white/20 rounded">
+                                        <option value="above">Preço Acima de</option>
+                                        <option value="below">Preço Abaixo de</option>
+                                        <option value="change">Variação de</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm mb-1">Valor</label>
+                                    <input type="number" id="alert-value" step="0.01" 
+                                           class="w-full p-2 bg-white/10 border border-white/20 rounded text-white">
+                                </div>
+                                <button type="submit" class="w-full btn-primary">Criar Alerta</button>
+                            </form>
+                        </div>
+                        
+                        <div id="detail-stats" class="space-y-2">
+                            <!-- Additional stats will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="glassmorphism p-6 rounded-2xl w-full max-w-md">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold">Configurações</h3>
+                    <button id="close-settings-modal" class="p-1 hover:bg-white/10 rounded">
+                        <i data-feather="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="settings-section">
+                        <h4 class="font-semibold mb-3">Preferências</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span>Modo Escuro</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="dark-mode-toggle" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <span>Notificações</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="notifications-toggle" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm mb-2">Intervalo de Atualização</label>
+                                <select id="update-interval" class="w-full p-2 bg-white/10 border border-white/20 rounded">
+                                    <option value="30">30 segundos</option>
+                                    <option value="60" selected>1 minuto</option>
+                                    <option value="300">5 minutos</option>
+                                    <option value="600">10 minutos</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4 class="font-semibold mb-3">Dados</h4>
+                        <div class="space-y-3">
+                            <button id="export-data" class="w-full btn-secondary text-left">
+                                <i data-feather="download" class="w-4 h-4 mr-2"></i>
+                                Exportar Dados
+                            </button>
+                            <button id="import-data" class="w-full btn-secondary text-left">
+                                <i data-feather="upload" class="w-4 h-4 mr-2"></i>
+                                Importar Dados
+                            </button>
+                            <input type="file" id="import-file" class="hidden" accept=".json">
+                        </div>
+                    </div>
+                    
+                    <div class="settings-actions">
+                        <button id="reset-settings" class="btn-secondary">Restaurar Padrão</button>
+                        <button id="save-settings" class="btn-primary">Salvar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-20 right-4 z-50 space-y-2"></div>
+
+    <!-- Scripts -->
+    <script src="js/utils/formatters.js"></script>
+    <script src="js/utils/validators.js"></script>
+    <script src="js/modules/storage.js"></script>
+    <script src="js/modules/analytics.js"></script>
+    <script src="js/modules/theme.js"></script>
+    <script src="js/modules/notifications.js"></script>
+    <script src="js/modules/api.js"></script>
+    <script src="js/modules/portfolio.js"></script>
+    <script src="js/modules/alerts.js"></script>
+    <script src="js/modules/charts.js"></script>
+    <script src="js/modules/arbitrage.js"></script>
+    <script src="js/app.js"></script>
+    
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+        
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => console.log('SW registered: ', registration))
+                    .catch(registrationError => console.log('SW registration failed: ', registrationError));
+            });
+        }
+    </script>
+</body>
+</html>
