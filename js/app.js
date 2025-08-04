@@ -49,6 +49,13 @@ class CryptoMonitorApp {
             this.isInitialized = true;
             console.log('✅ Crypto Monitor Pro initialized successfully');
             
+            // Ensure theme is properly applied after initialization
+            setTimeout(() => {
+                if (window.Theme) {
+                    Theme.ensureThemeApplied();
+                }
+            }, 200);
+            
             // Track initialization (temporarily disabled)
             // Analytics.trackEvent('app_initialized', 'app', 'startup');
             
@@ -338,7 +345,7 @@ class CryptoMonitorApp {
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-sm text-gray-400">#{crypto.market_cap_rank || '--'}</p>
+                            <p class="text-sm text-gray-400">#${crypto.market_cap_rank || '--'}</p>
                         </div>
                     </div>
                     

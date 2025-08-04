@@ -18,6 +18,22 @@ class ThemeModule {
         this.setupSystemPreferenceListener();
         this.setupToggleButtons();
         this.applyTheme(this.currentTheme, false);
+        
+        // Ensure theme is properly applied after DOM is ready
+        setTimeout(() => {
+            this.updateToggleButtons();
+            this.applyTheme(this.currentTheme, false);
+        }, 100);
+        
+        // Additional check after a longer delay to ensure everything is loaded
+        setTimeout(() => {
+            this.forceThemeApplication();
+        }, 500);
+        
+        // Final check to ensure theme is applied correctly
+        setTimeout(() => {
+            this.ensureThemeApplied();
+        }, 1000);
     }
     
     detectSystemPreference() {
@@ -63,7 +79,8 @@ class ThemeModule {
         const darkModeToggle = document.getElementById('dark-mode-toggle');
         if (darkModeToggle) {
             darkModeToggle.addEventListener('change', (e) => {
-                this.setTheme(e.target.checked ? 'dark' : 'light');
+                const newTheme = e.target.checked ? 'dark' : 'light';
+                this.setTheme(newTheme);
             });
         }
     }
@@ -125,6 +142,14 @@ class ThemeModule {
         
         // Update meta theme-color for mobile browsers
         this.updateMetaThemeColor(theme);
+        
+        // Force a reflow to ensure styles are applied
+        root.offsetHeight;
+        
+        // Dispatch custom event for theme change
+        document.dispatchEvent(new CustomEvent('themeChanged', { 
+            detail: { theme: theme } 
+        }));
     }
     
     updateCSSVariables(theme) {
@@ -246,7 +271,11 @@ class ThemeModule {
         const darkModeToggle = document.getElementById('dark-mode-toggle');
         if (darkModeToggle) {
             const effectiveTheme = this.getEffectiveTheme(this.currentTheme);
+            // Ensure the toggle reflects the actual theme state
             darkModeToggle.checked = effectiveTheme === 'dark';
+            
+            // Force update the toggle state
+            darkModeToggle.dispatchEvent(new Event('change', { bubbles: true }));
         }
         
         // Update toggle button title
@@ -315,6 +344,47 @@ class ThemeModule {
     
     isDark() {
         return this.getEffectiveTheme(this.currentTheme) === 'dark';
+    }
+    
+    forceThemeApplication() {
+        const effectiveTheme = this.getEffectiveTheme(this.currentTheme);
+        const root = document.documentElement;
+        const body = document.body;
+        
+        // Force apply theme styles
+        body.classList.remove('dark', 'light');
+        root.removeAttribute('data-theme');
+        
+        body.classList.add(effectiveTheme);
+        root.setAttribute('data-theme', effectiveTheme);
+        
+        // Update CSS variables
+        this.updateCSSVariables(effectiveTheme);
+        
+        // Update toggle buttons
+        this.updateToggleButtons();
+        
+        console.log('🎨 Theme forced to:', effectiveTheme);
+    }
+    
+    ensureThemeApplied() {
+        const root = document.documentElement;
+        const body = document.body;
+        const effectiveTheme = this.getEffectiveTheme(this.currentTheme);
+        
+        // Check if theme is properly applied
+        const currentDataTheme = root.getAttribute('data-theme');
+        const currentBodyClass = body.className;
+        
+        if (currentDataTheme !== effectiveTheme || !currentBodyClass.includes(effectiveTheme)) {
+            console.log('🎨 Theme not properly applied, fixing...');
+            this.forceThemeApplication();
+        } else {
+            console.log('🎨 Theme properly applied:', effectiveTheme);
+        }
+        
+        // Ensure toggle buttons are in sync
+        this.updateToggleButtons();
     }
     
     isLight() {

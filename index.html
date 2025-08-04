@@ -52,7 +52,7 @@
         });
     </script>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen">
+<body class="min-h-screen">
     <!-- Loading Screen -->
     <div id="loading-screen" class="fixed inset-0 bg-gray-900 z-50 flex items-center justify-center">
         <div class="text-center">
@@ -434,10 +434,55 @@
         // Initialize Feather Icons
         feather.replace();
         
+        // Apply theme immediately to prevent flash
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            const root = document.documentElement;
+            const body = document.body;
+            
+            // Apply theme immediately
+            body.classList.remove('dark', 'light');
+            root.removeAttribute('data-theme');
+            
+            body.classList.add(savedTheme);
+            root.setAttribute('data-theme', savedTheme);
+            
+            // Apply CSS variables
+            const themes = {
+                dark: {
+                    '--bg-primary': '#111827',
+                    '--bg-secondary': '#1f2937',
+                    '--bg-tertiary': '#374151',
+                    '--text-primary': '#ffffff',
+                    '--text-secondary': '#d1d5db',
+                    '--text-muted': '#9ca3af',
+                    '--border-color': 'rgba(255, 255, 255, 0.1)',
+                    '--glass-bg': 'rgba(255, 255, 255, 0.08)',
+                    '--glass-border': 'rgba(255, 255, 255, 0.1)'
+                },
+                light: {
+                    '--bg-primary': '#f8fafc',
+                    '--bg-secondary': '#ffffff',
+                    '--bg-tertiary': '#f1f5f9',
+                    '--text-primary': '#1e293b',
+                    '--text-secondary': '#475569',
+                    '--text-muted': '#64748b',
+                    '--border-color': 'rgba(0, 0, 0, 0.1)',
+                    '--glass-bg': 'rgba(255, 255, 255, 0.8)',
+                    '--glass-border': 'rgba(0, 0, 0, 0.1)'
+                }
+            };
+            
+            const themeVars = themes[savedTheme] || themes.dark;
+            Object.entries(themeVars).forEach(([property, value]) => {
+                root.style.setProperty(property, value);
+            });
+        })();
+        
         // Register Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('js/sw.js')
                     .then(registration => console.log('SW registered: ', registration))
                     .catch(registrationError => console.log('SW registration failed: ', registrationError));
             });
