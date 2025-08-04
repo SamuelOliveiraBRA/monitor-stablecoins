@@ -49,12 +49,7 @@ class CryptoMonitorApp {
             this.isInitialized = true;
             console.log('✅ Crypto Monitor Pro initialized successfully');
             
-            // Ensure theme is properly applied after initialization
-            setTimeout(() => {
-                if (window.Theme) {
-                    Theme.ensureThemeApplied();
-                }
-            }, 200);
+
             
             // Track initialization (temporarily disabled)
             // Analytics.trackEvent('app_initialized', 'app', 'startup');

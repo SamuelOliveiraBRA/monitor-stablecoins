@@ -22,18 +22,7 @@ class ThemeModule {
         // Ensure theme is properly applied after DOM is ready
         setTimeout(() => {
             this.updateToggleButtons();
-            this.applyTheme(this.currentTheme, false);
         }, 100);
-        
-        // Additional check after a longer delay to ensure everything is loaded
-        setTimeout(() => {
-            this.forceThemeApplication();
-        }, 500);
-        
-        // Final check to ensure theme is applied correctly
-        setTimeout(() => {
-            this.ensureThemeApplied();
-        }, 1000);
     }
     
     detectSystemPreference() {
@@ -89,6 +78,11 @@ class ThemeModule {
     setTheme(theme, animate = true) {
         if (!['dark', 'light', 'auto'].includes(theme)) {
             console.warn(`Invalid theme: ${theme}`);
+            return;
+        }
+        
+        // Prevent infinite loops
+        if (this.currentTheme === theme) {
             return;
         }
         
@@ -251,36 +245,41 @@ class ThemeModule {
     
     // UI Updates
     updateToggleButtons() {
-        // Update main theme toggle icon
-        const themeToggle = document.getElementById('theme-toggle');
-        if (themeToggle) {
-            const icon = themeToggle.querySelector('[data-feather]');
-            if (icon) {
-                const effectiveTheme = this.getEffectiveTheme(this.currentTheme);
-                const iconName = this.getThemeIcon(effectiveTheme);
-                icon.setAttribute('data-feather', iconName);
-                
-                // Re-render feather icons
-                if (window.feather) {
-                    feather.replace();
+        try {
+            // Update main theme toggle icon
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                const icon = themeToggle.querySelector('[data-feather]');
+                if (icon) {
+                    const effectiveTheme = this.getEffectiveTheme(this.currentTheme);
+                    const iconName = this.getThemeIcon(effectiveTheme);
+                    icon.setAttribute('data-feather', iconName);
+                    
+                    // Re-render feather icons safely
+                    if (window.feather && typeof feather.replace === 'function') {
+                        try {
+                            feather.replace();
+                        } catch (error) {
+                            console.warn('Feather icons replace failed:', error);
+                        }
+                    }
                 }
             }
-        }
-        
-        // Update settings toggle
-        const darkModeToggle = document.getElementById('dark-mode-toggle');
-        if (darkModeToggle) {
-            const effectiveTheme = this.getEffectiveTheme(this.currentTheme);
-            // Ensure the toggle reflects the actual theme state
-            darkModeToggle.checked = effectiveTheme === 'dark';
             
-            // Force update the toggle state
-            darkModeToggle.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-        
-        // Update toggle button title
-        if (themeToggle) {
-            themeToggle.title = this.getThemeTooltip();
+            // Update settings toggle
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            if (darkModeToggle) {
+                const effectiveTheme = this.getEffectiveTheme(this.currentTheme);
+                // Ensure the toggle reflects the actual theme state
+                darkModeToggle.checked = effectiveTheme === 'dark';
+            }
+            
+            // Update toggle button title
+            if (themeToggle) {
+                themeToggle.title = this.getThemeTooltip();
+            }
+        } catch (error) {
+            console.warn('Theme toggle update failed:', error);
         }
     }
     
@@ -361,30 +360,7 @@ class ThemeModule {
         // Update CSS variables
         this.updateCSSVariables(effectiveTheme);
         
-        // Update toggle buttons
-        this.updateToggleButtons();
-        
         console.log('🎨 Theme forced to:', effectiveTheme);
-    }
-    
-    ensureThemeApplied() {
-        const root = document.documentElement;
-        const body = document.body;
-        const effectiveTheme = this.getEffectiveTheme(this.currentTheme);
-        
-        // Check if theme is properly applied
-        const currentDataTheme = root.getAttribute('data-theme');
-        const currentBodyClass = body.className;
-        
-        if (currentDataTheme !== effectiveTheme || !currentBodyClass.includes(effectiveTheme)) {
-            console.log('🎨 Theme not properly applied, fixing...');
-            this.forceThemeApplication();
-        } else {
-            console.log('🎨 Theme properly applied:', effectiveTheme);
-        }
-        
-        // Ensure toggle buttons are in sync
-        this.updateToggleButtons();
     }
     
     isLight() {
